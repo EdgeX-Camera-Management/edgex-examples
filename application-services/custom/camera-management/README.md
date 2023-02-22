@@ -13,24 +13,30 @@ A relatively modern Linux environment with `docker`, `docker-compose`, and `make
 ### 1. Start the EdgeX Core Services and Device Services.
 
 1. Clone `edgex-compose` from github.com.
-```shell 
-git clone https://github.com/edgexfoundry/edgex-compose.git
-``` 
+   ```shell 
+   git clone https://github.com/edgexfoundry/edgex-compose.git
+   ```  
 
-2. Checkout latest branch.
-```shell
-git checkout levski
-```
+2. Navigate to the EdgeX `compose-compose` directory:
+
+   ```bash
+   cd edgex-compose
+   ```
+
+3. Checkout latest branch.
+   ```shell
+   git checkout levski
+   ```
 
 Note: The `levski` branch is the latest stable branch at the time of this update. 
 
-3. Navigate to the EdgeX `edgex-compose/compose-builder` directory:
+4. Navigate to the EdgeX `edgex-compose/compose-builder` directory:
 
    ```bash
-   cd edgex-compose/compose-builder/
+   cd compose-builder/
    ```
 
-4. Update the `add-device-usb-camera.yml` file.:
+5. Update the `add-device-usb-camera.yml` file:
 
    a. Add the rtsp server hostname environmental variable to the `device-usb-camera` service.
    ```yml
@@ -42,16 +48,16 @@ Note: The `levski` branch is the latest stable branch at the time of this update
       where `your-local-ip-address` is the ip address of the machine running the rtsp server.
 
    b. Under the `ports` section, find the one for port 8554 and change the host_ip from 127.0.0.1 to either 0.0.0.0 or the ip address you put in the previous step.
-5. (Optional) If onvif cameras are being used, please refer to the [Edgex Onvif device service](https://github.com/edgexfoundry/device-onvif-camera/blob/main/doc/guides/CustomStartupGuide.md) documentation to run the onvif device service with camera credentials.
+6. (Optional) If onvif cameras are being used, please refer to the [Edgex Onvif device service](https://github.com/edgexfoundry/device-onvif-camera/blob/main/doc/guides/CustomStartupGuide.md) documentation to run the onvif device service with camera credentials.
 
-6. Run the following `make` command to run the edgex core services along with the Onvif and Usb device services.
+7. Run the following `make` command to run the edgex core services along with the Onvif and Usb device services.
 ```shell
-make run no-secty ds-onvif-camera ds-usb-camera 
+   make run no-secty ds-onvif-camera ds-usb-camera 
 ```   
 
 ### 2. Start [Edge Video Analytics Microservice](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html) running for inference.
 
-Note: Port for EVAM result streams has been changed from 8554 to 8555 to avoid conflicts with device-usb-camera service.
+Note: the port for EVAM result streams has been changed from 8554 to 8555 to avoid conflicts with device-usb-camera service.
 
 ```shell
 # Run this once to download edge-video-analytics into the edge-video-analytics sub-folder, 
