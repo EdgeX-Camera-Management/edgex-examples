@@ -5,10 +5,63 @@ This app uses [EdgeX compose][edgex-compose], [Edgex Onvif device service][devic
 
 A brief video demonstration of building and using the example app service can be found [here](https://www.youtube.com/watch?v=vZqd3j2Zn2Y).
 
-## Steps for running this example:
-Prerequisites:
-A relatively modern Linux environment with `docker`, `docker-compose`, and `make` installed is required.
+## Install Dependencies
 
+### Environment
+This example has been tested with a relatively modern Lniux environment - Ubuntu 20.04 and later
+
+### Install Docker
+Install Docker from the official repository as documented on the [Docker](https://docs.docker.com/engine/install/ubuntu/) site.
+
+### Verify Docker
+To enable running Docker commands without the preface of sudo, add the user to the Docker group. Then run Docker with the `hello-world` test.
+
+1. Create Docker group:
+   ```bash
+   sudo groupadd docker
+   ```
+   >NOTE: If the group already exists, `groupadd` outputs a message: **groupadd: group `docker` already exists**. This is OK.
+
+2. Add User to group:
+   ```bash
+   sudo usermod -aG docker $USER
+   ```
+
+3. Refresh the group:
+   ```bash
+   newgrp docker 
+   ```
+
+4. To verify the Docker installation, run `hello-world`:
+
+   ```bash
+   docker run hello-world
+   ```
+   A **Hello from Docker!** greeting indicates successful installation.
+
+   ```bash
+   Unable to find image 'hello-world:latest' locally
+   latest: Pulling from library/hello-world
+   2db29710123e: Pull complete 
+   Digest: sha256:10d7d58d5ebd2a652f4d93fdd86da8f265f5318c6a73cc5b6a9798ff6d2b2e67
+   Status: Downloaded newer image for hello-world:latest
+
+   Hello from Docker!
+   This message shows that your installation appears to be working correctly.
+   ...
+   ```
+
+### Install Docker Compose
+Install Docker Compose from the official repository as documented on the [Docker Compose](https://docs.docker.com/compose/install/linux/#install-using-the-repository) site.
+
+### Install Tools
+Install the build, media streaming, and parsing tools:
+
+```bash
+sudo apt install build-essential
+```
+
+## Steps for running this example:
 
 ### 1. Start the EdgeX Core Services and Device Services.
 
