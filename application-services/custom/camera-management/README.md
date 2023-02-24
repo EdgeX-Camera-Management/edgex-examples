@@ -135,7 +135,7 @@ make install-edge-video-analytics
 # Run the EVAM services (in another terminal)
 make run-edge-video-analytics
 # ...
-# OPTIONAL: Leave this running. If needed to stop
+# OPTIONAL: Leave this running. If you need to stop the services, run Ctrl-C
 make stop-edge-video-analytics
 ```
 
