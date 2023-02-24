@@ -1,7 +1,7 @@
 # Camera Management Example App Service
 Use the Camera Management Example application service to auto discover and connect to nearby ONVIF and USB based cameras. This application will also control cameras via commands, create inference pipelines for the camera video streams and publish inference results to MQTT broker.
 
-This app uses [EdgeX compose][edgex-compose], [Edgex Onvif device service][device-onvif-camera]], [Edgex Usb device service][device-usb-camera] and [Edge Video Analytics Microservice][evam].
+This app uses [EdgeX compose][edgex-compose], [Edgex Onvif device service][device-onvif-camera], [Edgex Usb device service][device-usb-camera] and [Edge Video Analytics Microservice][evam].
 
 A brief video demonstration of building and using the example app service can be found [here](https://www.youtube.com/watch?v=vZqd3j2Zn2Y).
 
@@ -52,7 +52,7 @@ To enable running Docker commands without the preface of sudo, add the user to t
 Install Docker Compose from the official repository as documented on the [Docker Compose](https://docs.docker.com/compose/install/linux/#install-using-the-repository) site.
 
 ### Install Tools
-Install the build, media streaming, and parsing tools:
+Install build tools:
 
 ```bash
 sudo apt install build-essential
@@ -67,20 +67,20 @@ sudo apt install build-essential
    git clone https://github.com/edgexfoundry/edgex-compose.git
    ```  
 
-2. Navigate to the EdgeX `compose-compose` directory:
+2. Navigate to the `edgex-compose` directory:
 
    ```bash
    cd edgex-compose
    ```
 
-3. Checkout latest branch.
+3. Checkout levski release branch.
    ```shell
    git checkout levski
    ```
 
 Note: The `levski` branch is the latest stable branch at the time of this update. 
 
-4. Navigate to the EdgeX `edgex-compose/compose-builder` directory:
+4. Navigate to the `compose-builder` sub-directory:
 
    ```bash
    cd compose-builder/
@@ -88,7 +88,7 @@ Note: The `levski` branch is the latest stable branch at the time of this update
 
 5. Update the `add-device-usb-camera.yml` file:
 
-   a. Add the rtsp server hostname environmental variable to the `device-usb-camera` service.
+   a. Add the rtsp server hostname environment variable to the `device-usb-camera` service.
    ```yml
    services:
       device-usb-camera:
@@ -97,17 +97,18 @@ Note: The `levski` branch is the latest stable branch at the time of this update
    ```
       where `your-local-ip-address` is the ip address of the machine running the rtsp server.
 
-   b. Under the `ports` section, find the one for port 8554 and change the host_ip from 127.0.0.1 to either 0.0.0.0 or the ip address you put in the previous step.
+   b. Under the `ports` section, find the entry for port 8554 and change the host_ip from 127.0.0.1 to either 0.0.0.0 or the ip address you put in the previous step.
 6. (Optional) If onvif cameras are being used, please refer to the [Edgex Onvif device service](https://github.com/edgexfoundry/device-onvif-camera/blob/main/doc/guides/CustomStartupGuide.md) documentation to run the onvif device service with camera credentials.
 
-7. Run the following `make` command to run the edgex core services along with the Onvif and Usb device services.
+7. Run the following `make` command to run the edgex core services along with the Onvif and Usb device services. Note: The `ds-onvif-camera` parameter can be ommited if no Onvif cameras are present and/or the `ds-usb-camera` parameter can be ommited if no usb cameras are present.
 ```shell
    make run no-secty ds-onvif-camera ds-usb-camera 
 ```   
 
-### 2. Start [Edge Video Analytics Microservice](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html) running for inference.
 
-Note: the port for EVAM result streams has been changed from 8554 to 8555 to avoid conflicts with device-usb-camera service.
+### 2. Start [Edge Video Analytics Microservice][evam] running for inference.
+
+**Note:** The port for EVAM result streams has been changed from 8554 to 8555 to avoid conflicts with device-usb-camera service.
 
 ```shell
 # Run this once to download edge-video-analytics into the edge-video-analytics sub-folder, 
