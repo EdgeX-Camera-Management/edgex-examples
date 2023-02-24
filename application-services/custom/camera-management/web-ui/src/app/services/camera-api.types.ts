@@ -231,3 +231,9 @@ export interface ImageFormat {
   MbusCode: number;
   PixelFormat: string;
 }
+
+export interface CameraFeatures {
+  PTZ: boolean;
+  Zoom: boolean;
+  CameraType: string;
+}

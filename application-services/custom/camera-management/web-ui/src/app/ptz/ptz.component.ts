@@ -23,11 +23,10 @@ export class PtzComponent implements OnInit, OnDestroy {
   }
 
   isPtzDisabled(): boolean {
-    return this.data.selectedCamera === undefined || this.data.selectedProfile === undefined;
+    return this.data.cameraFeatures === undefined || this.data.cameraFeatures.PTZ === false;
   }
 
   isZoomDisabled(): boolean {
-    // for now, always disable zoom buttons
-    return true;
+    return this.data.cameraFeatures === undefined || this.data.cameraFeatures.Zoom === false;
   }
 }

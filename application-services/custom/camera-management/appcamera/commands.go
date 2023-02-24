@@ -7,8 +7,9 @@ package appcamera
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/IOTechSystems/onvif/device"
+	"github.com/IOTechSystems/onvif/media"
 	"github.com/IOTechSystems/onvif/ptz"
 	"github.com/IOTechSystems/onvif/xsd/onvif"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
@@ -22,6 +23,7 @@ const (
 	streamUriCommand          = "StreamUri"
 	profilesCommand           = "Profiles"
 	getPresetsCommand         = "GetPresets"
+	getCapabilitiesCommand    = "Capabilities"
 	getConfigurationsCommand  = "GetConfigurations"
 	startStreamingCommand     = "StartStreaming"
 	stopStreamingCommand      = "StopStreaming"
@@ -40,20 +42,10 @@ func (app *CameraManagementApp) getImageFormats(deviceName string) (interface{},
 	return resp.Event.Readings[0].ObjectValue, nil
 }
 
-func (app *CameraManagementApp) getProfiles(deviceName string) (ProfilesResponse, error) {
-	profiles, err := app.issueGetCommand(context.Background(), deviceName, profilesCommand)
-	if err != nil {
-		return ProfilesResponse{}, errors.Wrapf(err, "failed to issue get Profiles command")
-	}
-
-	val := profiles.Event.Readings[0].ObjectValue
-	js, err := json.Marshal(val)
-	if err != nil {
-		return ProfilesResponse{}, errors.Wrapf(err, "failed to marshal profiles json object")
-	}
-	pr := ProfilesResponse{}
-	err = json.Unmarshal(js, &pr)
-	return pr, err
+func (app *CameraManagementApp) getProfiles(deviceName string) (media.GetProfilesResponse, error) {
+	resp := media.GetProfilesResponse{}
+	err := app.issueGetCommandForResponse(context.Background(), deviceName, profilesCommand, &resp)
+	return resp, err
 }
 
 func (app *CameraManagementApp) doPTZ(deviceName, profileToken string, x, y, zoom float64) (dtosCommon.BaseResponse, error) {
@@ -76,42 +68,64 @@ func (app *CameraManagementApp) doPTZ(deviceName, profileToken string, x, y, zoo
 	return app.sendPutCommand(deviceName, relativeMoveCommand, cmd)
 }
 
-func (app *CameraManagementApp) getPresets(deviceName string, profileToken string) (GetPresetsResponse, error) {
+func (app *CameraManagementApp) getCameraFeatures(deviceName string) (CameraFeatures, error) {
+	var err error
+	features := CameraFeatures{}
+	resp, err := app.service.DeviceClient().DeviceByName(context.Background(), deviceName)
+	if err != nil {
+		return CameraFeatures{}, err
+	}
+
+	switch resp.Device.ServiceName {
+	case app.config.AppCustom.OnvifDeviceServiceName:
+		features.CameraType = Onvif
+		caps, err := app.getCapabilities(deviceName)
+		if err != nil {
+			return CameraFeatures{}, errors.Wrapf(err, "unable to get device capabilities")
+		}
+		if caps.Capabilities.PTZ.XAddr != "" {
+			features.PTZ = true
+
+			ptzConfigs, err := app.getPTZConfiguration(deviceName)
+			if err == nil {
+				features.Zoom = ptzConfigs.PTZConfiguration[0].ZoomLimits != nil
+			}
+		}
+	case app.config.AppCustom.USBDeviceServiceName:
+		features.CameraType = USB
+	default:
+		features.CameraType = Unknown
+	}
+
+	return features, nil
+}
+
+func (app *CameraManagementApp) getCapabilities(deviceName string) (device.GetCapabilitiesResponse, error) {
+	cmd := &device.GetCapabilities{
+		Category: onvif.CapabilityCategory("All"),
+	}
+
+	resp := device.GetCapabilitiesResponse{}
+	err := app.issueGetCommandWithJsonForResponse(context.Background(), deviceName, getCapabilitiesCommand, cmd, &resp)
+	return resp, err
+}
+
+func (app *CameraManagementApp) getPresets(deviceName string, profileToken string) (ptz.GetPresetsResponse, error) {
 	cmd := &ptz.GetPresets{
 		ProfileToken: onvif.ReferenceToken(profileToken),
 	}
 
-	presets, err := app.issueGetCommandWithJson(context.Background(), deviceName, getPresetsCommand, cmd)
-	if err != nil {
-		return GetPresetsResponse{}, errors.Wrapf(err, "failed to issue get presets command")
-	}
-
-	val := presets.Event.Readings[0].ObjectValue
-	js, err := json.Marshal(val)
-	if err != nil {
-		return GetPresetsResponse{}, errors.Wrapf(err, "failed to marshal presets json object")
-	}
-	pr := GetPresetsResponse{}
-	err = json.Unmarshal(js, &pr)
-	return pr, err
+	resp := ptz.GetPresetsResponse{}
+	err := app.issueGetCommandWithJsonForResponse(context.Background(), deviceName, getPresetsCommand, cmd, &resp)
+	return resp, err
 }
 
-func (app *CameraManagementApp) getPTZConfiguration(deviceName string) (GetPTZConfigurationsResponse, error) {
+func (app *CameraManagementApp) getPTZConfiguration(deviceName string) (ptz.GetConfigurationsResponse, error) {
 	cmd := &ptz.GetConfigurations{}
 
-	config, err := app.issueGetCommandWithJson(context.Background(), deviceName, getConfigurationsCommand, cmd)
-	if err != nil {
-		return GetPTZConfigurationsResponse{}, errors.Wrapf(err, "failed to issue get configurations command")
-	}
-
-	val := config.Event.Readings[0].ObjectValue
-	js, err := json.Marshal(val)
-	if err != nil {
-		return GetPTZConfigurationsResponse{}, errors.Wrapf(err, "failed to marshal configurations json object")
-	}
-	pr := GetPTZConfigurationsResponse{}
-	err = json.Unmarshal(js, &pr)
-	return pr, err
+	resp := ptz.GetConfigurationsResponse{}
+	err := app.issueGetCommandWithJsonForResponse(context.Background(), deviceName, getConfigurationsCommand, cmd, &resp)
+	return resp, err
 }
 
 func (app *CameraManagementApp) gotoPreset(deviceName string, profile string, preset string) (dtosCommon.BaseResponse, error) {
@@ -124,21 +138,12 @@ func (app *CameraManagementApp) gotoPreset(deviceName string, profile string, pr
 }
 
 func (app *CameraManagementApp) isStreaming(deviceName string) (bool, error) {
-	resp, err := app.issueGetCommand(context.Background(), deviceName, usbStreamingStatusCommand)
+	resp := StreamingStatusResponse{}
+	err := app.issueGetCommandForResponse(context.Background(), deviceName, usbStreamingStatusCommand, &resp)
 	if err != nil {
 		return false, err
 	}
-	val := resp.Event.Readings[0].ObjectValue
-	js, err := json.Marshal(val)
-	if err != nil {
-		return false, errors.Wrapf(err, "failed to marshal json object")
-	}
-	ss := StreamingStatusResponse{}
-	err = json.Unmarshal(js, &ss)
-	if err != nil {
-		return false, errors.Wrapf(err, "failed to unmarshal json object")
-	}
-	return ss.IsStreaming, nil
+	return resp.IsStreaming, nil
 }
 
 func (app *CameraManagementApp) startStreaming(deviceName string, req USBStartStreamingRequest) (dtosCommon.BaseResponse, error) {

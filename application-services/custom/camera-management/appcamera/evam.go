@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/IOTechSystems/onvif/media"
 	"github.com/pkg/errors"
 	"net/url"
 	"path"
@@ -89,16 +90,12 @@ func (app *CameraManagementApp) queryStreamUri(deviceName string, sr StartPipeli
 
 func (app *CameraManagementApp) getOnvifStreamUri(deviceName string, profileToken string) (string, error) {
 	req := StreamUriRequest{ProfileToken: profileToken}
-	cmdResponse, err := app.issueGetCommandWithJson(context.Background(), deviceName, streamUriCommand, req)
+	resp := media.GetStreamUriResponse{}
+	err := app.issueGetCommandWithJsonForResponse(context.Background(), deviceName, streamUriCommand, req, &resp)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to issue get StreamUri command")
+		return "", err
 	}
-	streamUri, errUri := parseStreamUri(cmdResponse)
-	if errUri != nil {
-		return "", errors.Wrapf(errUri, "failed to get stream Uri from the device %s", deviceName)
-	}
-
-	return streamUri, nil
+	return string(resp.MediaUri.Uri), nil
 }
 
 func (app *CameraManagementApp) getUSBStreamUri(deviceName string) (string, error) {

@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 -->
   </mat-form-field>
 </div>
 
-<div *ngIf="data.cameraIsOnvif(data.selectedCamera)">
+<div *ngIf="data.cameraIsOnvif()">
   <mat-form-field appearance="fill">
     <mat-label>Select a video stream</mat-label>
     <mat-select [(value)]="data.selectedProfile" (valueChange)="profileSelectionChanged($event)">
@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0 -->
   </mat-form-field>
 </div>
 
-<div *ngIf="!data.cameraIsOnvif(data.selectedCamera)">
+<div *ngIf="!data.cameraIsOnvif()">
   <mat-form-field  appearance="fill">
     <mat-label>Select image format (optional)</mat-label>
     <mat-select [(value)]="data.inputPixelFormat" (valueChange)="pixelSelectionChanged($event)">
@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0 -->
   </mat-form-field>
 </div>
 
-<div *ngIf="!data.cameraIsOnvif(data.selectedCamera) && data.inputPixelFormat !== undefined">
+<div *ngIf="!data.cameraIsOnvif() && data.inputPixelFormat !== undefined">
   <mat-form-field appearance="fill">
     <mat-label>Select image resolution (optional)</mat-label>
     <mat-select [(value)]="data.inputImageSize">

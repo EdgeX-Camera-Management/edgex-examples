@@ -5,7 +5,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { environment } from '../../environments/environment';
-import { Device, GetImageFormatsResponse, GetPresetsResponse, GetProfilesResponse } from "./camera-api.types";
+import {
+  CameraFeatures,
+  Device,
+  GetImageFormatsResponse,
+  GetPresetsResponse,
+  GetProfilesResponse
+} from "./camera-api.types";
 import { DataService } from "./data.service";
 import { Pipeline, PipelineInfoStatus, PipelineStatus, StartPipelineRequest, USBConfig } from "./pipeline-api.types";
 import { ApiLogIgnoreHeader, JsonHeaders } from "../constants";
@@ -69,15 +75,30 @@ export class CameraApiService {
     this.data.imageFormats = undefined;
     this.data.inputPixelFormat = undefined;
     this.data.inputImageSize = undefined;
+    this.data.cameraFeatures = undefined;
   }
 
   updateCameraChanged(cameraName: string) {
     this.clearCameraInfo();
-    if (this.data.cameraIsOnvif(cameraName)) {
-      this.updateProfiles(cameraName);
-    } else {
-      this.updateImageFormats(cameraName);
-    }
+    this.updateCameraFeatures(cameraName);
+  }
+
+  updateCameraFeatures(cameraName: string) {
+    this.httpClient.get<CameraFeatures>(
+      this.makeCameraUrl(cameraName, '/features'))
+      .subscribe({
+        next: data => {
+          this.data.cameraFeatures = data;
+          if (this.data.cameraIsOnvif()) {
+            this.updateProfiles(cameraName);
+          } else if (this.data.cameraIsUSB()) {
+            this.updateImageFormats(cameraName);
+          } else {
+            console.log('error, invalid camera type: ' + data.CameraType)
+          }
+        }, error: _ => {
+        }
+      });
   }
 
   updateProfiles(cameraName: string) {

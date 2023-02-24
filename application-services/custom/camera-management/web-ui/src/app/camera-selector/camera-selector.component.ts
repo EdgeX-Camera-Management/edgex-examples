@@ -39,7 +39,7 @@ export class CameraSelectorComponent implements OnInit, OnDestroy {
 
   startPipeline() {
     let tokens = this.data.selectedPipeline.split('/')
-    if (this.data.cameraIsOnvif(this.data.selectedCamera)) {
+    if (this.data.cameraIsOnvif()) {
       this.api.startOnvifPipeline(this.data.selectedCamera, tokens[0], tokens[1], this.data.selectedProfile);
     } else {
       this.api.startUSBPipeline(this.data.selectedCamera, tokens[0], tokens[1], this.data.getUSBConfig());
@@ -48,7 +48,7 @@ export class CameraSelectorComponent implements OnInit, OnDestroy {
 
   shouldDisablePipeline() {
     return this.data.selectedCamera == undefined
-      || (this.data.selectedProfile == undefined && this.data.cameraIsOnvif(this.data.selectedCamera))  // todo: should be a is selection correct. and support onvif and usb
+      || (this.data.selectedProfile == undefined && this.data.cameraIsOnvif())  // todo: should be a is selection correct. and support onvif and usb
       || (this.data.pipelineMap[this.data.selectedCamera] !== undefined
           && this.data.pipelineMap[this.data.selectedCamera].status.state == 'RUNNING')
   }

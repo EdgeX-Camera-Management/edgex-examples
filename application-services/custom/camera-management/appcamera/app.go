@@ -19,8 +19,8 @@ type CameraManagementApp struct {
 	config         *ServiceConfig
 	pipelinesMap   map[string]PipelineInfo
 	pipelinesMutex sync.RWMutex
-	panTiltMap     map[string]PanTiltRange
-	panTiltMutex   sync.RWMutex
+	ptzRangeMap    map[string]PTZRange
+	ptzRangeMutex  sync.RWMutex
 	fileServer     http.Handler
 }
 
@@ -30,7 +30,7 @@ func NewCameraManagementApp(service interfaces.ApplicationService) *CameraManage
 		lc:           service.LoggingClient(),
 		config:       &ServiceConfig{},
 		pipelinesMap: make(map[string]PipelineInfo),
-		panTiltMap:   make(map[string]PanTiltRange),
+		ptzRangeMap:  make(map[string]PTZRange),
 	}
 }
 
