@@ -98,7 +98,24 @@ Note: The `levski` branch is the latest stable branch at the time of this update
       where `your-local-ip-address` is the ip address of the machine running the rtsp server.
 
    b. Under the `ports` section, find the entry for port 8554 and change the host_ip from 127.0.0.1 to either 0.0.0.0 or the ip address you put in the previous step.
-6. (Optional) If onvif cameras are being used, please refer to the [Edgex Onvif device service](https://github.com/edgexfoundry/device-onvif-camera/blob/main/doc/guides/CustomStartupGuide.md) documentation to run the onvif device service with camera credentials.
+6. (Optional) Configure Onvif Camera Credentials. Note: This step is only required if you have Onvif cameras. Currently this solution is limited to supporting only 1 username/password combination for ALL cameras. In the future when then device-onvif-camera service is able to provide us with pre-authenticated stream uris, this can be removed.
+
+   Option 1: Modify the `configuration.toml` file  
+   
+
+   ```toml
+   [Writable.InsecureSecrets.CameraCredentials]
+   path = "CameraCredentials"
+     [Writable.InsecureSecrets.CameraCredentials.Secrets]
+     username = ""
+     password = ""
+   ```
+   
+   Option 2: Export environment variable overrides
+   ```shell
+   export WRITABLE_INSECURESECRETS_CAMERACREDENTIALS_SECRETS_USERNAME=<username>
+   export WRITABLE_INSECURESECRETS_CAMERACREDENTIALS_SECRETS_PASSWORD=<passowrd>
+   ```  
 
 7. Run the following `make` command to run the edgex core services along with the Onvif and Usb device services. Note: The `ds-onvif-camera` parameter can be ommited if no Onvif cameras are present and/or the `ds-usb-camera` parameter can be ommited if no usb cameras are present.
 ```shell
