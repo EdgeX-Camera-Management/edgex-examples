@@ -1,7 +1,7 @@
 # Camera Management Example App Service
 Use the Camera Management Example application service to auto discover and connect to nearby ONVIF and USB based cameras. This application will also control cameras via commands, create inference pipelines for the camera video streams and publish inference results to MQTT broker.
 
-This app uses [EdgeX compose][edgex-compose], [Edgex Onvif device service][device-onvif-camera], [Edgex Usb device service][device-usb-camera] and [Edge Video Analytics Microservice][evam].
+This app uses [EdgeX compose][edgex-compose], [Edgex Onvif Camera device service][device-onvif-camera], [Edgex USB Camera device service][device-usb-camera] and [Edge Video Analytics Microservice][evam].
 
 A brief video demonstration of building and using the example app service can be found [here](https://www.youtube.com/watch?v=vZqd3j2Zn2Y).
 
