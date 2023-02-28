@@ -10,6 +10,9 @@ A brief video demonstration of building and using the example app service can be
 ### Environment
 This example has been tested with a relatively modern Lniux environment - Ubuntu 20.04 and later
 
+### Install Golang
+Install Golang from the official repository as documented on the [Golang](https://go.dev/doc/install) site.
+
 ### Install Docker
 Install Docker from the official repository as documented on the [Docker](https://docs.docker.com/engine/install/ubuntu/) site.
 
