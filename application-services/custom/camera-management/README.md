@@ -10,9 +10,6 @@ A brief video demonstration of building and using the example app service can be
 ### Environment
 This example has been tested with a relatively modern Lniux environment - Ubuntu 20.04 and later
 
-### Install Golang
-Install Golang from the official repository as documented on the [Golang](https://go.dev/doc/install) site.
-
 ### Install Docker
 Install Docker from the official repository as documented on the [Docker](https://docs.docker.com/engine/install/ubuntu/) site.
 
@@ -53,6 +50,9 @@ To enable running Docker commands without the preface of sudo, add the user to t
 
 ### Install Docker Compose
 Install Docker Compose from the official repository as documented on the [Docker Compose](https://docs.docker.com/compose/install/linux/#install-using-the-repository) site.
+
+### Install Golang
+Install Golang from the official repository as documented on the [Golang](https://go.dev/doc/install) site.
 
 ### Install Tools
 Install build tools:
