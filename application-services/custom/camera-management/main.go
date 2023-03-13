@@ -18,9 +18,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	appsdk "github.com/edgexfoundry/app-functions-sdk-go/v2/pkg"
 	"github.com/edgexfoundry/edgex-examples/application-services/custom/camera-management/appcamera"
-	"os"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 )
 
 const (
@@ -34,7 +36,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	app := appcamera.NewCameraManagementApp(service)
+	app := appcamera.NewAppServiceWithTargetType(service, &dtos.SystemEvent{})
 	if err := app.Run(); err != nil {
 		service.LoggingClient().Error(err.Error())
 		os.Exit(-1)
