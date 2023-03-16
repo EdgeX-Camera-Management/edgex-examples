@@ -37,6 +37,20 @@ func main() {
 	}
 
 	app := appcamera.NewAppServiceWithTargetType(service, &dtos.SystemEvent{})
+
+	// TODO: Replace below functions with built in and/or your custom functions for your use case
+	//       or remove if using Pipeline By Topics below.
+	//       See https://docs.edgexfoundry.org/latest/microservices/application/BuiltIn/ for list of built-in functions
+	// err = app.service.SetDefaultFunctionsPipeline(
+	// transforms.NewFilterFor(deviceNames).FilterByDeviceName,
+	// sample.LogEventDetails,
+	// sample.ConvertEventToXML,
+	// sample.OutputXML)
+	// if err != nil {
+	// 	app.lc.Errorf("SetFunctionsPipeline returned error: %s", err.Error())
+	// 	return -1
+	// }
+
 	if err := app.Run(); err != nil {
 		service.LoggingClient().Error(err.Error())
 		os.Exit(-1)
