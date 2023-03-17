@@ -9,10 +9,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/IOTechSystems/onvif/media"
-	"github.com/pkg/errors"
 	"net/url"
 	"path"
+
+	"github.com/IOTechSystems/onvif/media"
+	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -216,6 +218,16 @@ func (app *CameraManagementApp) getPipelineStatus(deviceName string) (interface{
 	}
 
 	return nil, nil
+}
+
+// processEdgeXEvent is our core processing logic for EdgeX events after they are first
+
+func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+	if data == nil {
+		return false, errors.New("processEdgeXEvent: was called without any data")
+	}
+
+	return false, nil
 }
 
 // queryAllPipelineStatuses queries EVAM for all pipeline statuses, attempts to link them to devices, and then

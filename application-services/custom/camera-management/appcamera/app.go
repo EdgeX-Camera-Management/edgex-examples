@@ -6,11 +6,12 @@
 package appcamera
 
 import (
+	"net/http"
+	"sync"
+
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
 	"github.com/pkg/errors"
-	"net/http"
-	"sync"
 )
 
 type CameraManagementApp struct {
@@ -41,6 +42,13 @@ func (app *CameraManagementApp) Run() error {
 
 	if err := app.addRoutes(); err != nil {
 		return err
+	}
+
+	// Subscribe to events.
+	err := app.service.SetDefaultFunctionsPipeline(
+		app.processEdgeXEvent)
+	if err != nil {
+		return errors.Wrap(err, "failed to build pipeline")
 	}
 
 	if err := app.queryAllPipelineStatuses(); err != nil {
