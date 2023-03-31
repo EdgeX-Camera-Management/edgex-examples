@@ -30,14 +30,13 @@ const (
 )
 
 func main() {
-	service, ok := appsdk.NewAppService(serviceKey)
+	service, ok := appsdk.NewAppServiceWithTargetType(serviceKey, &dtos.SystemEvent{})
 	if !ok {
 		fmt.Printf("error: unable to create new app service %s!\n", serviceKey)
 		os.Exit(-1)
 	}
 
-	app := appcamera.NewAppServiceWithTargetType(service, &dtos.SystemEvent{})
-
+	app := appcamera.NewCameraManagementApp(service)
 	if err := app.Run(); err != nil {
 		service.LoggingClient().Error(err.Error())
 		os.Exit(-1)

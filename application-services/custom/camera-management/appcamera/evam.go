@@ -14,6 +14,7 @@ import (
 
 	"github.com/IOTechSystems/onvif/media"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	"github.com/pkg/errors"
 )
 
@@ -220,12 +221,39 @@ func (app *CameraManagementApp) getPipelineStatus(deviceName string) (interface{
 	return nil, nil
 }
 
-// processEdgeXEvent is our core processing logic for EdgeX events after they are first
+// processEdgeXEvent is the function that is called when an EdgeX event is received
 
 func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	if data == nil {
-		return false, errors.New("processEdgeXEvent: was called without any data")
+		app.lc.Errorf("processEdgeXEvent: was called without any data")
+		return false, nil
 	}
+
+	if app.config.AppCustom.DefaultPipelineName == "" || app.config.AppCustom.DefaultPipelineVersion == "" {
+		app.lc.Errorf("processEdgeXEvent: PipelineName or PipelineVersion is empty")
+		return false, nil
+	}
+
+	systemEvent, ok := data.(dtos.SystemEvent)
+	if !ok {
+		app.lc.Errorf("type received is not a SystemEvent")
+		return false, nil
+	}
+
+	if systemEvent.Type != "device" {
+		app.lc.Infof("system event type is not device")
+		return false, nil
+	}
+
+	//res, err := app.getPipelineStatus()
+
+	// if info, found := app.getPipelineInfo(deviceName); found {
+	// 	var res interface{}
+	// 	if err := issueGetRequest(context.Background(), &res, app.config.AppCustom.EvamBaseUrl, path.Join("pipelines", "status", info.Id)); err != nil {
+	// 		return nil, errors.Wrap(err, "GET request to query EVAM pipeline status failed")
+	// 	}
+	// 	return res, nil
+	// }
 
 	return false, nil
 }

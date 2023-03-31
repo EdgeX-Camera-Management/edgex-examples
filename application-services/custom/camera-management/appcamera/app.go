@@ -48,13 +48,29 @@ func (app *CameraManagementApp) Run() error {
 	err := app.service.SetDefaultFunctionsPipeline(
 		app.processEdgeXEvent)
 	if err != nil {
-		return errors.Wrap(err, "failed to build pipeline")
+		return errors.Wrap(err, "failed to set default pipeline to processEdgeXEvent")
 	}
 
 	if err := app.queryAllPipelineStatuses(); err != nil {
 		// do not exit, just log
 		app.lc.Errorf("Unable to query EVAM pipeline statuses. Is EVAM running? %s", err.Error())
 	}
+
+	devices, err := app.getAllDevices()
+	if err != nil {
+		app.lc.Errorf("Unable to query all devices")
+	}
+
+	if devices == nil {
+		app.lc.Errorf("Unable to query all devices")
+	}
+
+	// for device, status := range devices {
+	// 	if status.OperatingState == "" {
+	// 		continue // skip started devices
+	// 	}
+
+	// }
 
 	if err := app.service.MakeItRun(); err != nil {
 		return errors.Wrap(err, "failed to run pipeline")

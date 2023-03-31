@@ -102,12 +102,24 @@ TokenFile = "/tmp/edgex/secrets/app-camera-management/secrets-token.json"
   Host = "localhost"
   Port = 59882
 
-[Trigger]
-Type="http"
-
 [AppCustom]
 OnvifDeviceServiceName = "device-onvif-camera"
 USBDeviceServiceName = "device-usb-camera"
 EvamBaseUrl = "http://localhost:8080"
 MqttAddress = "broker:1883"
 MqttTopic = "incoming/data/edge-video-analytics/inference-event"
+DefaultPipelineName = "object_tracking"
+DefaultPipelineVersion = "people_tracking"
+
+
+  [Trigger]
+Type="edgex-messagebus"
+  [Trigger.EdgexMessageBus]
+  Type = "redis"
+    [Trigger.EdgexMessageBus.SubscribeHost]
+    Host = "localhost"
+    Port = 6379
+    Protocol = "redis"
+    AuthMode = "usernamepassword"  # required for redis messagebus (secure or insecure).
+    SecretName = "redisdb"
+    SubscribeTopics="edgex/system-events/#"
