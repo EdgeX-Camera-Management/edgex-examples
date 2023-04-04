@@ -241,18 +241,41 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 	}
 
 	if systemEvent.Type != "device" {
-		app.lc.Infof("system event type is not device")
+		app.lc.Debug("system event type is not device")
 		return false, nil
 	}
 
-	//res, err := app.getPipelineStatus()
+	if systemEvent.Action != "added" {
+		app.lc.Debug("system event action is not added")
+		//TODO: remove return
+		//return false, nil
+	}
+	device := dtos.Device{}
+	err := systemEvent.DecodeDetails(&device)
+	if err != nil {
+		app.lc.Errorf("failed to decode device details: %v", err)
+		return false, nil
+	}
+	// res, err := app.getPipelineStatus(device.Name)
 
-	// if info, found := app.getPipelineInfo(deviceName); found {
-	// 	var res interface{}
-	// 	if err := issueGetRequest(context.Background(), &res, app.config.AppCustom.EvamBaseUrl, path.Join("pipelines", "status", info.Id)); err != nil {
-	// 		return nil, errors.Wrap(err, "GET request to query EVAM pipeline status failed")
+	// if err != nil {
+	// 	app.lc.Errorf("pipeline status failed for device %s", device.Name)
+	// 	return false, nil
+	// }
+	// if res == nil {
+	// 	app.lc.Debugf("pipeline status not found for device %s", device.Name)
+	// } else {
+	// 	app.lc.Debugf("pipeline status found for device %s", device.Name)
 	// 	}
-	// 	return res, nil
+	// pipelineInfo, found := app.getPipelineInfo(device.Name)
+	// if found {
+	// 	app.lc.Infof("Pipeline info found: %v", pipelineInfo)
+	// } else {
+	// 	app.lc.Errorf("No Pipeline info not found for device %s", device.Name)
+	// if res == nil {
+	// 	app.lc.Debugf("pipeline status not found for device %s", device.Name)
+	// } else {
+	// 	app.lc.Debugf("pipeline status found for device %s", device.Name)
 	// }
 
 	return false, nil
