@@ -250,6 +250,9 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		//TODO: remove return
 		//return false, nil
 	}
+	return app.startDefaultPipeline(systemEvent)
+}
+func (app *CameraManagementApp) startDefaultPipeline(systemEvent dtos.SystemEvent) (bool, error) {
 	device := dtos.Device{}
 	err := systemEvent.DecodeDetails(&device)
 	if err != nil {
@@ -285,9 +288,10 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 			ProfileToken: string(profileResponse.Profiles[0].Token),
 		}
 	}
-	// } else if _, ok := device.Protocols["USB"]; ok {
-	// 	startPipelineRequest.USB = &USBStartStreamingRequest{}
-	// } else {
+	if _, ok := device.Protocols["USB"]; ok {
+		startPipelineRequest.USB = &USBStartStreamingRequest{}
+	}
+	// else {
 	// 	app.lc.Errorf("no protocol found for device %s", device.Name)
 	// 	return false, nil
 	// }
