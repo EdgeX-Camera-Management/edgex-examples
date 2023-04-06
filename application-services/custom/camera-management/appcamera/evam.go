@@ -256,29 +256,48 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		app.lc.Errorf("failed to decode device details: %v", err)
 		return false, nil
 	}
-	// res, err := app.getPipelineStatus(device.Name)
+	pipelineRunning := app.isPipelineRunning(device.Name)
 
-	// if err != nil {
-	// 	app.lc.Errorf("pipeline status failed for device %s", device.Name)
+	if pipelineRunning {
+		app.lc.Debugf("pipeline is already running for device %s", device.Name)
+		// return false, nil
+	}
+
+	startPipelineRequest := StartPipelineRequest{
+		PipelineName:    app.config.AppCustom.DefaultPipelineName,
+		PipelineVersion: app.config.AppCustom.DefaultPipelineVersion,
+	}
+
+	protocol, ok := device.Protocols["Onvif"]
+	if ok {
+
+		app.lc.Debugf("Onvif protocol information found for device: %s message: %v", device.Name, protocol)
+
+		profileResponse, err := app.getProfiles(device.Name)
+		if err != nil {
+			app.lc.Errorf("failed to get profiles for device %s, message: %v", device.Name, err)
+			return false, err
+		}
+
+		app.lc.Debugf("Onvif profile information found for device: %s message: %v", device.Name, profileResponse)
+
+		startPipelineRequest.Onvif = &OnvifPipelineConfig{
+			ProfileToken: string(profileResponse.Profiles[0].Token),
+		}
+	}
+	// } else if _, ok := device.Protocols["USB"]; ok {
+	// 	startPipelineRequest.USB = &USBStartStreamingRequest{}
+	// } else {
+	// 	app.lc.Errorf("no protocol found for device %s", device.Name)
 	// 	return false, nil
 	// }
-	// if res == nil {
-	// 	app.lc.Debugf("pipeline status not found for device %s", device.Name)
-	// } else {
-	// 	app.lc.Debugf("pipeline status found for device %s", device.Name)
-	// 	}
-	// pipelineInfo, found := app.getPipelineInfo(device.Name)
-	// if found {
-	// 	app.lc.Infof("Pipeline info found: %v", pipelineInfo)
-	// } else {
-	// 	app.lc.Errorf("No Pipeline info not found for device %s", device.Name)
-	// if res == nil {
-	// 	app.lc.Debugf("pipeline status not found for device %s", device.Name)
-	// } else {
-	// 	app.lc.Debugf("pipeline status found for device %s", device.Name)
-	// }
 
-	return false, nil
+	if err := app.startPipeline(device.Name, startPipelineRequest); err != nil {
+		app.lc.Errorf("pipeline failed to start for device %s, message: %v", device.Name, err)
+		return false, err
+	}
+
+	return true, nil
 }
 
 // queryAllPipelineStatuses queries EVAM for all pipeline statuses, attempts to link them to devices, and then
