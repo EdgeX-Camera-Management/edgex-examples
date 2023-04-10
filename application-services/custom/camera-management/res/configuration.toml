@@ -108,8 +108,8 @@ USBDeviceServiceName = "device-usb-camera"
 EvamBaseUrl = "http://localhost:8080"
 MqttAddress = "broker:1883"
 MqttTopic = "incoming/data/edge-video-analytics/inference-event"
-DefaultPipelineName = "object_tracking"
-DefaultPipelineVersion = "people_tracking"
+DefaultPipelineName = "object_detection"
+DefaultPipelineVersion = "person"
 
 
   [Trigger]

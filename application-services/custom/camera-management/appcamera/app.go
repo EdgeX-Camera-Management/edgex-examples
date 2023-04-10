@@ -65,12 +65,16 @@ func (app *CameraManagementApp) Run() error {
 		app.lc.Errorf("Unable to query all devices")
 	}
 
-	// for device, status := range devices {
-	// 	if status.OperatingState == "" {
-	// 		continue // skip started devices
-	// 	}
+	for _, device := range devices {
+		pipelineRunning := app.isPipelineRunning(device.Name)
 
-	// }
+		if pipelineRunning {
+			app.lc.Debugf("pipeline is already running for device %s", device.Name)
+			continue
+		}
+
+		app.startDefaultPipeline(device)
+	}
 
 	if err := app.service.MakeItRun(); err != nil {
 		return errors.Wrap(err, "failed to run pipeline")

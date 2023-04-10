@@ -250,20 +250,21 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		//TODO: remove return
 		//return false, nil
 	}
-	return app.startDefaultPipeline(systemEvent)
-}
-func (app *CameraManagementApp) startDefaultPipeline(systemEvent dtos.SystemEvent) (bool, error) {
+
 	device := dtos.Device{}
 	err := systemEvent.DecodeDetails(&device)
 	if err != nil {
 		app.lc.Errorf("failed to decode device details: %v", err)
 		return false, nil
 	}
+	return app.startDefaultPipeline(device)
+}
+func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, error) {
 	pipelineRunning := app.isPipelineRunning(device.Name)
 
 	if pipelineRunning {
 		app.lc.Debugf("pipeline is already running for device %s", device.Name)
-		// return false, nil
+		return false, nil
 	}
 
 	startPipelineRequest := StartPipelineRequest{
@@ -289,12 +290,9 @@ func (app *CameraManagementApp) startDefaultPipeline(systemEvent dtos.SystemEven
 		}
 	}
 	if _, ok := device.Protocols["USB"]; ok {
+		app.lc.Debugf("Usb protocol found for device: %s", device.Name)
 		startPipelineRequest.USB = &USBStartStreamingRequest{}
 	}
-	// else {
-	// 	app.lc.Errorf("no protocol found for device %s", device.Name)
-	// 	return false, nil
-	// }
 
 	if err := app.startPipeline(device.Name, startPipelineRequest); err != nil {
 		app.lc.Errorf("pipeline failed to start for device %s, message: %v", device.Name, err)
