@@ -222,7 +222,6 @@ func (app *CameraManagementApp) getPipelineStatus(deviceName string) (interface{
 }
 
 // processEdgeXEvent is the function that is called when an EdgeX event is received
-
 func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	if data == nil {
 		app.lc.Errorf("processEdgeXEvent: was called without any data")
@@ -247,8 +246,7 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 
 	if systemEvent.Action != "added" {
 		app.lc.Debug("system event action is not added")
-		//TODO: remove return
-		//return false, nil
+		return false, nil
 	}
 
 	device := dtos.Device{}
@@ -257,8 +255,10 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		app.lc.Errorf("failed to decode device details: %v", err)
 		return false, nil
 	}
+
 	return app.startDefaultPipeline(device)
 }
+
 func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, error) {
 	pipelineRunning := app.isPipelineRunning(device.Name)
 

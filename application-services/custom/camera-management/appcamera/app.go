@@ -59,11 +59,10 @@ func (app *CameraManagementApp) Run() error {
 	devices, err := app.getAllDevices()
 	if err != nil {
 		app.lc.Errorf("Unable to query all devices")
-	}
 
-	if devices == nil {
-		app.lc.Errorf("Unable to query all devices")
-	}
+	} else if devices == nil {
+		app.lc.Debugf("No devices found")
+	} else {
 
 	for _, device := range devices {
 		pipelineRunning := app.isPipelineRunning(device.Name)
@@ -74,6 +73,7 @@ func (app *CameraManagementApp) Run() error {
 		}
 
 		app.startDefaultPipeline(device)
+		}
 	}
 
 	if err := app.service.MakeItRun(); err != nil {
