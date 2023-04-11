@@ -64,15 +64,9 @@ func (app *CameraManagementApp) Run() error {
 		app.lc.Debugf("No devices found")
 	} else {
 
-	for _, device := range devices {
-		pipelineRunning := app.isPipelineRunning(device.Name)
+		for _, device := range devices {
 
-		if pipelineRunning {
-			app.lc.Debugf("pipeline is already running for device %s", device.Name)
-			continue
-		}
-
-		app.startDefaultPipeline(device)
+			app.startDefaultPipeline(device)
 		}
 	}
 

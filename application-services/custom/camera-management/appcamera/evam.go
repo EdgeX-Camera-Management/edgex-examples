@@ -225,34 +225,30 @@ func (app *CameraManagementApp) getPipelineStatus(deviceName string) (interface{
 func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	if data == nil {
 		app.lc.Errorf("processEdgeXEvent: was called without any data")
-		return false, nil
-	}
-
-	if app.config.AppCustom.DefaultPipelineName == "" || app.config.AppCustom.DefaultPipelineVersion == "" {
-		app.lc.Errorf("processEdgeXEvent: PipelineName or PipelineVersion is empty")
-		return false, nil
+		return false, fmt.Errorf("processEdgeXEvent: was called without any data")
 	}
 
 	systemEvent, ok := data.(dtos.SystemEvent)
 	if !ok {
 		app.lc.Errorf("type received is not a SystemEvent")
-		return false, nil
+		return false, fmt.Errorf("type received is not a SystemEvent")
 	}
 
+	//TODO: change app to listen to device events instead of system events
 	if systemEvent.Type != "device" {
 		app.lc.Debug("system event type is not device")
-		return false, nil
-	}
-
-	if systemEvent.Action != "added" {
-		app.lc.Debug("system event action is not added")
-		return false, nil
+		return false, fmt.Errorf("system event type is not device")
 	}
 
 	device := dtos.Device{}
 	err := systemEvent.DecodeDetails(&device)
 	if err != nil {
 		app.lc.Errorf("failed to decode device details: %v", err)
+		return false, nil
+	}
+
+	if systemEvent.Action != "added" {
+		app.lc.Debug("system event action is not added")
 		return false, nil
 	}
 
@@ -264,7 +260,12 @@ func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, 
 
 	if pipelineRunning {
 		app.lc.Debugf("pipeline is already running for device %s", device.Name)
-		return false, nil
+		return false, fmt.Errorf("pipeline is already running for device %s", device.Name)
+	}
+
+	if app.config.AppCustom.DefaultPipelineName == "" || app.config.AppCustom.DefaultPipelineVersion == "" {
+		app.lc.Warnf("no default pipeline name/version specified, skip starting pipeline for device %s", device.Name)
+		return false, fmt.Errorf("no default pipeline name/version specified, skip starting pipeline for device %s", device.Name)
 	}
 
 	startPipelineRequest := StartPipelineRequest{
@@ -288,8 +289,7 @@ func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, 
 		startPipelineRequest.Onvif = &OnvifPipelineConfig{
 			ProfileToken: string(profileResponse.Profiles[0].Token),
 		}
-	}
-	if _, ok := device.Protocols["USB"]; ok {
+	} else if _, ok := device.Protocols["USB"]; ok {
 		app.lc.Debugf("Usb protocol found for device: %s", device.Name)
 		startPipelineRequest.USB = &USBStartStreamingRequest{}
 	}
