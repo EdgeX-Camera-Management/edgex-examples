@@ -58,7 +58,7 @@ func (app *CameraManagementApp) Run() error {
 
 	devices, err := app.getAllDevices()
 	if err != nil {
-		app.lc.Errorf("Unable to query all devices")
+		app.lc.Warnf("no devices found: %s", err.Error())
 
 	} else if devices == nil {
 		app.lc.Debugf("No devices found")

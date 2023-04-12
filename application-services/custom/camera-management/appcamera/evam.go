@@ -234,9 +234,8 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		return false, fmt.Errorf("type received is not a SystemEvent")
 	}
 
-	//TODO: change app to listen to device events instead of system events
 	if systemEvent.Type != "device" {
-		app.lc.Debug("system event type is not device")
+		app.lc.Error("system event type is not device")
 		return false, fmt.Errorf("system event type is not device")
 	}
 
@@ -245,9 +244,8 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 	if err != nil {
 		app.lc.Errorf("failed to decode device details: %v", err)
 		return false, nil
-	}
 
-	if systemEvent.Action != "added" {
+	} else if systemEvent.Action != "added" {
 		app.lc.Debug("system event action is not added")
 		return false, nil
 	}
@@ -261,6 +259,8 @@ func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, 
 	if pipelineRunning {
 		app.lc.Debugf("pipeline is already running for device %s", device.Name)
 		return false, fmt.Errorf("pipeline is already running for device %s", device.Name)
+	} else {
+		app.lc.Debugf("pipeline is not running for device %s", device.Name)
 	}
 
 	if app.config.AppCustom.DefaultPipelineName == "" || app.config.AppCustom.DefaultPipelineVersion == "" {
