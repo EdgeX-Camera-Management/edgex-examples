@@ -14,6 +14,7 @@ import (
 
 	"github.com/IOTechSystems/onvif/media"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	"github.com/pkg/errors"
 )
@@ -234,7 +235,7 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		return false, fmt.Errorf("type received is not a SystemEvent")
 	}
 
-	if systemEvent.Type != "device" {
+	if systemEvent.Type != common.DeviceSystemEventType {
 		app.lc.Error("system event type is not device")
 		return false, fmt.Errorf("system event type is not device")
 	}
@@ -245,8 +246,8 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		app.lc.Errorf("failed to decode device details: %v", err)
 		return false, fmt.Errorf("failed to decode device details: %v", err)
 
-	} else if systemEvent.Action == "add" {
-		app.lc.Debug("system event action add")
+	} else if systemEvent.Action == common.DeviceSystemEventActionAdd {
+		app.lc.Debugf("system event action %s", common.DeviceSystemEventActionAdd)
 		return app.startDefaultPipeline(device)
 	} else {
 		return false, fmt.Errorf("invalid system event action: %s", systemEvent.Action)
