@@ -245,12 +245,12 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		app.lc.Errorf("failed to decode device details: %v", err)
 		return false, fmt.Errorf("failed to decode device details: %v", err)
 
-	} else if systemEvent.Action != "added" {
-		app.lc.Debug("system event action is not added")
-		return false, fmt.Errorf("system event action is not added")
+	} else if systemEvent.Action == "add" {
+		app.lc.Debug("system event action add")
+		return app.startDefaultPipeline(device)
+	} else {
+		return false, fmt.Errorf("invalid system event action: %s", systemEvent.Action)
 	}
-
-	return app.startDefaultPipeline(device)
 }
 
 func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, error) {
