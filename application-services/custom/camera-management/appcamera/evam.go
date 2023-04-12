@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"net/url"
 	"path"
 
@@ -231,41 +232,55 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 	systemEvent, ok := data.(dtos.SystemEvent)
 	if !ok {
 		app.lc.Errorf("type received is not a SystemEvent")
-		return false, fmt.Errorf("type received is not a SystemEvent")
+		return false, fmt.Errorf("type received %T is not a SystemEvent", data)
 	}
 
-	if systemEvent.Type != "device" {
-		app.lc.Error("system event type is not device")
-		return false, fmt.Errorf("system event type is not device")
+	if systemEvent.Type != common.DeviceSystemEventType {
+		app.lc.Error("System event type is not " + common.DeviceSystemEventType)
+		return false, fmt.Errorf("system event type is not " + common.DeviceSystemEventType)
 	}
+
+	app.lc.Debugf("Received system event: %v", systemEvent)
 
 	device := dtos.Device{}
 	err := systemEvent.DecodeDetails(&device)
 	if err != nil {
 		app.lc.Errorf("failed to decode device details: %v", err)
 		return false, fmt.Errorf("failed to decode device details: %v", err)
-
-	} else if systemEvent.Action != "added" {
-		app.lc.Debug("system event action is not added")
-		return false, fmt.Errorf("system event action is not added")
 	}
 
-	return app.startDefaultPipeline(device)
+	switch systemEvent.Action {
+	case common.DeviceSystemEventActionAdd:
+		if err = app.startDefaultPipeline(device); err != nil {
+			return false, err
+		}
+	case common.DeviceSystemEventActionDelete:
+		// stop any running pipelines for the deleted device
+		if info, found := app.getPipelineInfo(device.Name); found {
+			if err = app.stopPipeline(device.Name, info.Id); err != nil {
+				return false, fmt.Errorf("error stopping pipleline for device %s, %v", device.Name, err)
+			}
+		}
+	default:
+		app.lc.Debugf("System event action %s is not handled", systemEvent.Action)
+	}
+
+	return false, nil
 }
 
-func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, error) {
+func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) error {
 	pipelineRunning := app.isPipelineRunning(device.Name)
 
 	if pipelineRunning {
 		app.lc.Debugf("pipeline is already running for device %s", device.Name)
-		return false, fmt.Errorf("pipeline is already running for device %s", device.Name)
+		return nil
 	} else {
 		app.lc.Debugf("pipeline is not running for device %s", device.Name)
 	}
 
 	if app.config.AppCustom.DefaultPipelineName == "" || app.config.AppCustom.DefaultPipelineVersion == "" {
 		app.lc.Warnf("no default pipeline name/version specified, skip starting pipeline for device %s", device.Name)
-		return false, fmt.Errorf("no default pipeline name/version specified, skip starting pipeline for device %s", device.Name)
+		return nil
 	}
 
 	startPipelineRequest := StartPipelineRequest{
@@ -279,7 +294,7 @@ func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, 
 		profileResponse, err := app.getProfiles(device.Name)
 		if err != nil {
 			app.lc.Errorf("failed to get profiles for device %s, message: %v", device.Name, err)
-			return false, err
+			return err
 		}
 
 		app.lc.Debugf("Onvif profile information found for device: %s message: %v", device.Name, profileResponse)
@@ -291,12 +306,13 @@ func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, 
 		startPipelineRequest.USB = &USBStartStreamingRequest{}
 	}
 
+	app.lc.Debugf("Starting default pipeline for device %s", device.Name)
 	if err := app.startPipeline(device.Name, startPipelineRequest); err != nil {
-		app.lc.Errorf("pipeline failed to start for device %s, message: %v", device.Name, err)
-		return false, err
+		app.lc.Errorf("Pipeline failed to start for device %s, message: %v", device.Name, err)
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
 // queryAllPipelineStatuses queries EVAM for all pipeline statuses, attempts to link them to devices, and then
