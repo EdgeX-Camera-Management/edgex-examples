@@ -15,6 +15,7 @@ import (
 
 	"github.com/IOTechSystems/onvif/media"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
 	"github.com/pkg/errors"
 )
@@ -235,12 +236,12 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 		return false, fmt.Errorf("type received %T is not a SystemEvent", data)
 	}
 
+	app.lc.Debugf("Received system event: %v", systemEvent)
+
 	if systemEvent.Type != common.DeviceSystemEventType {
 		app.lc.Error("System event type is not " + common.DeviceSystemEventType)
 		return false, fmt.Errorf("system event type is not " + common.DeviceSystemEventType)
 	}
-
-	app.lc.Debugf("Received system event: %v", systemEvent)
 
 	device := dtos.Device{}
 	err := systemEvent.DecodeDetails(&device)

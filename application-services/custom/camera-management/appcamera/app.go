@@ -58,7 +58,7 @@ func (app *CameraManagementApp) Run() error {
 
 	devices, err := app.getAllDevices()
 	if err != nil {
-		app.lc.Warnf("no devices found: %s", err.Error())
+		app.lc.Errorf("no devices found: %s", err.Error())
 	} else {
 		for _, device := range devices {
 			if err = app.startDefaultPipeline(device); err != nil {
