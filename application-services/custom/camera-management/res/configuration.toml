@@ -110,7 +110,6 @@ MqttTopic = "incoming/data/edge-video-analytics/inference-event"
 DefaultPipelineName = "object_detection" # Name of the default pipeline used when a new device is added to the system
 DefaultPipelineVersion = "person" # Version of the default pipeline used when a new device is added to the system
 
-
   [Trigger]
   Type="edgex-messagebus"
   [Trigger.EdgexMessageBus]

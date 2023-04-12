@@ -243,11 +243,11 @@ func (app *CameraManagementApp) processEdgeXEvent(_ interfaces.AppFunctionContex
 	err := systemEvent.DecodeDetails(&device)
 	if err != nil {
 		app.lc.Errorf("failed to decode device details: %v", err)
-		return false, nil
+		return false, fmt.Errorf("failed to decode device details: %v", err)
 
 	} else if systemEvent.Action != "added" {
 		app.lc.Debug("system event action is not added")
-		return false, nil
+		return false, fmt.Errorf("system event action is not added")
 	}
 
 	return app.startDefaultPipeline(device)
@@ -275,9 +275,7 @@ func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, 
 
 	protocol, ok := device.Protocols["Onvif"]
 	if ok {
-
 		app.lc.Debugf("Onvif protocol information found for device: %s message: %v", device.Name, protocol)
-
 		profileResponse, err := app.getProfiles(device.Name)
 		if err != nil {
 			app.lc.Errorf("failed to get profiles for device %s, message: %v", device.Name, err)
@@ -285,7 +283,6 @@ func (app *CameraManagementApp) startDefaultPipeline(device dtos.Device) (bool, 
 		}
 
 		app.lc.Debugf("Onvif profile information found for device: %s message: %v", device.Name, profileResponse)
-
 		startPipelineRequest.Onvif = &OnvifPipelineConfig{
 			ProfileToken: string(profileResponse.Profiles[0].Token),
 		}
