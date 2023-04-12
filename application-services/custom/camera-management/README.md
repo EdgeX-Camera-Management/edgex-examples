@@ -158,7 +158,17 @@ make run-edge-video-analytics
    export WRITABLE_INSECURESECRETS_CAMERACREDENTIALS_SECRETS_PASSWORD="<password>"
    ```  
 
-#### 3.2 Build and run
+#### 3.2 Configure Default Pipeline
+
+Modify the [res/configuration.toml](res/configuration.toml) file with the name and version of the default pipeline to use when a new device is added to the system.
+
+   ```toml
+[AppCustom]
+DefaultPipelineName = "object_detection" # Name of the default pipeline used when a new device is added to the system
+DefaultPipelineVersion = "person" # Version of the default pipeline used when a new device is added to the system
+   ```
+
+#### 3.3 Build and run
 ```shell
 # First make sure you are at the root of this example app
 cd edgex-examples/application-services/custom/camera-management
